@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "update-image",
+  "type": "object",
+  "properties": {
+    "caption": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "url": {
+      "type": "string"
+    },
+    "is_published": {
+      "type": "integer"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "caption",
+    "url",
+    "is_published",
+    "updatedAt"
+  ],
+  "additionalProperties": false
+}

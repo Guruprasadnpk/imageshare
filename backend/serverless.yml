@@ -1,0 +1,304 @@
+service:
+  name: serverless-imageshare-app
+
+plugins:
+  - serverless-webpack
+  - serverless-reqvalidator-plugin
+  - serverless-aws-documentation
+  - serverless-iam-roles-per-function
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'us-west-2'}
+
+  tracing:
+    lambda: true
+    apiGateway: true
+
+  environment:
+    IMAGES_TABLE: Images-${self:provider.stage}
+    IMAGE_ID_INDEX: ImageIdIndex
+    IMAGE_PUBLISH_INDEX: ImagePublisherIndex
+    CONNECTIONS_TABLE: Connections-${self:provider.stage}
+    ATTACHMENTS_S3_BUCKET: serverless-imageshare-guru-attachments-${self:provider.stage}
+    SIGNED_URL_EXPIRATION: 300
+
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - xray:PutTelemetryRecords
+        - xray:PutTraceSegments
+      Resource: "*"
+
+custom:
+  documentation:
+    api:
+      info:
+        version: v1.0.0
+        title: ImageShare API
+        description: Serverless application for Images
+    models:
+      - name: CreateImageRequest
+        contentType: application/json
+        schema: ${file(models/image/create-image-request.json)}
+      - name: UpdateImageRequest
+        contentType: application/json
+        schema: ${file(models/image/update-image-request.json)}
+
+functions:
+
+  Auth:
+    handler: src/lambda/auth/auth0Authorizer.handler
+
+  GetImages:
+    handler: src/lambda/http/images/getImages.handler
+    events:
+      - http:
+          method: get
+          authorizer: Auth
+          path: images
+          cors: true
+    iamRoleStatementsInherit: true
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.IMAGES_TABLE}
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.IMAGES_TABLE}/index/${self:provider.environment.IMAGE_ID_INDEX}
+
+  GetPublishedImages:
+    handler: src/lambda/http/images/getPublishedImages.handler
+    events:
+      - http:
+          method: get
+          path: pubimages
+          cors: true
+    iamRoleStatementsInherit: true
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Scan
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.IMAGES_TABLE}
+      - Effect: Allow
+        Action:
+          - dynamodb:Scan
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.IMAGES_TABLE}/index/${self:provider.environment.IMAGE_PUBLISH_INDEX}
+
+  CreateImage:
+    handler: src/lambda/http/images/createImage.handler
+    events:
+      - http:
+          method: post
+          authorizer: Auth
+          path: images
+          cors: true
+          reqValidatorName: RequestBodyValidator
+          documentation:
+            summary: Create a new Image
+            description: Create a new Image
+            requestModels:
+              'application/json': CreateImageRequest
+    iamRoleStatementsInherit: true
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:PutItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.IMAGES_TABLE}
+
+  UpdateImage:
+    handler: src/lambda/http/images/updateImage.handler
+    events:
+      - http:
+          method: patch
+          authorizer: Auth
+          path: images/{imageId}
+          cors: true
+          reqValidatorName: RequestBodyValidator
+          documentation:
+            summary: Update a Image
+            description: Update a Image
+            requestModels:
+              'application/json': UpdateImageRequest
+    iamRoleStatementsInherit: true
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:UpdateItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.IMAGES_TABLE}
+
+  DeleteImage:
+    handler: src/lambda/http/images/deleteImage.handler
+    events:
+      - http:
+          method: delete
+          authorizer: Auth
+          path: images/{imageId}
+          cors: true
+    iamRoleStatementsInherit: true
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:DeleteItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.IMAGES_TABLE}
+
+  GenerateUploadUrl:
+    handler: src/lambda/http/images/generateUploadUrl.handler
+    events:
+      - http:
+          method: post
+          authorizer: Auth
+          path: images/{imageId}/attachment
+          cors: true
+    iamRoleStatementsInherit: true
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - s3:PutObject
+          - s3:GetObject
+        Resource: arn:aws:s3:::${self:provider.environment.ATTACHMENTS_S3_BUCKET}/*
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:UpdateItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.IMAGES_TABLE}
+
+  ConnectHandler:
+    handler: src/lambda/websocket/connect.handler
+    events:
+      - websocket:
+          route: $connect
+    iamRoleStatementsInherit: true
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:PutItem
+        Resource: arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.CONNECTIONS_TABLE}
+
+  DisconnectHandler:
+    handler: src/lambda/websocket/disconnect.handler
+    events:
+      - websocket:
+          route: $disconnect
+    iamRoleStatementsInherit: true
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:DeleteItem
+        Resource: arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.CONNECTIONS_TABLE}
+
+resources:
+  Resources:
+    GatewayResponseDefault4XX:
+      Type: AWS::ApiGateway::GatewayResponse
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+          gatewayresponse.header.Access-Control-Allow-Methods: "'GET,OPTIONS,POST'"
+        ResponseType: DEFAULT_4XX
+        RestApiId:
+          Ref: ApiGatewayRestApi
+
+    ImagesDynamoDBTable:
+      Type: "AWS::DynamoDB::Table"
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: imageId
+            AttributeType: S
+          - AttributeName: createdAt
+            AttributeType: S
+          - AttributeName: accountId
+            AttributeType: S
+          - AttributeName: is_published
+            AttributeType: N
+        KeySchema:
+          - AttributeName: accountId
+            KeyType: HASH
+          - AttributeName: imageId
+            KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST
+        StreamSpecification:
+          StreamViewType: NEW_IMAGE
+        TableName: ${self:provider.environment.IMAGES_TABLE}
+        LocalSecondaryIndexes:
+          - IndexName: ${self:provider.environment.IMAGE_ID_INDEX}
+            KeySchema:
+            - AttributeName: accountId
+              KeyType: HASH
+            - AttributeName: createdAt
+              KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+        GlobalSecondaryIndexes:
+          - IndexName: ${self:provider.environment.IMAGE_PUBLISH_INDEX}
+            KeySchema:
+            - AttributeName: imageId
+              KeyType: HASH
+            - AttributeName: is_published
+              KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+
+    WebSocketConnectionsDynamoDBTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: id
+            AttributeType: S
+        KeySchema:
+          -
+            AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${self:provider.environment.CONNECTIONS_TABLE}
+
+    RequestBodyValidator:
+      Type: AWS::ApiGateway::RequestValidator
+      Properties:
+        Name: 'request-body-validator'
+        RestApiId:
+          Ref: ApiGatewayRestApi
+        ValidateRequestBody: true
+        ValidateRequestParameters: false
+
+    AttachmentsBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:provider.environment.ATTACHMENTS_S3_BUCKET}
+        CorsConfiguration:
+          CorsRules:
+            -
+              AllowedOrigins:
+                - '*'
+              AllowedHeaders:
+                - '*'
+              AllowedMethods:
+                - GET
+                - PUT
+                - POST
+                - DELETE
+                - HEAD
+              MaxAge: 3000
+
+    BucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        PolicyDocument:
+          Id: MyPolicy
+          Version: "2012-10-17"
+          Statement:
+            - Sid: PublicReadForGetBucketObjects
+              Effect: Allow
+              Principal: '*'
+              Action: 's3:GetObject'
+              Resource: 'arn:aws:s3:::${self:provider.environment.ATTACHMENTS_S3_BUCKET}/*'
+        Bucket: !Ref AttachmentsBucket
