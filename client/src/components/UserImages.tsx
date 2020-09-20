@@ -77,8 +77,8 @@ export class Images extends React.PureComponent<ImagesProps, ImagesState> {
         {this.state.images.map((img, pos) => {
           return (
             <Grid.Row key={img.imageId}>
-              {img.url && (
-                <Image src={img.url} size="medium" wrapped />
+              {img.urls.thumb && (
+                <Image src={img.urls.thumb} size="medium" wrapped />
               )}
             </Grid.Row>
           )

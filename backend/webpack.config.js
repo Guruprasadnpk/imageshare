@@ -19,7 +19,22 @@ module.exports = {
     module: {
         rules: [
             // all files with a `.ts` or `.tsx` extension will be handled by `ts-loader`
-            { test: /\.tsx?$/, loader: 'ts-loader' },
+            {
+                test: /\.tsx?$/, 
+                use: {
+                    loader: 'awesome-typescript-loader',
+                    options: { configFileName: 'tsconfig.json' }
+                },
+                exclude: /node_modules/ 
+            },
+            {
+                test: /\.(sass|less|css)$/,
+                loaders: ['style-loader', 'css-loader', 'less-loader']
+            },
+            {
+                test: /\.node$/,
+                loader: 'node-loader',
+            }
         ],
     },
 };

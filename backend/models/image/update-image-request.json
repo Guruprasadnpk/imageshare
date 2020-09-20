@@ -8,8 +8,17 @@
       "minLength": 1,
       "maxLength": 100
     },
-    "url": {
-      "type": "string"
+    "urls": {
+      "type": "object",
+      "properties":{
+        "raw": {
+          "type": "string"
+        },
+        "thumb": {
+          "type": "string"
+        }
+      },
+      "required":["raw", "thumb"]
     },
     "is_published": {
       "type": "integer"
@@ -21,7 +30,7 @@
   },
   "required": [
     "caption",
-    "url",
+    "urls",
     "is_published",
     "updatedAt"
   ],

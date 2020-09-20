@@ -72,13 +72,13 @@ export class ImagesAccess {
             TableName: this.imagesTable,
             IndexName: imageIdIndex,
             Key: { accountId: accountId, imageId: imageId },
-            UpdateExpression: "set caption = :caption, #na = :url, is_published=:is_published, updatedAt = :updatedAt",
+            UpdateExpression: "set caption = :caption, #na = :urls, is_published=:is_published, updatedAt = :updatedAt",
             ExpressionAttributeNames: {
-                "#na": "url"
+                "#na": "urls"
             },
             ExpressionAttributeValues: {
                 ":caption": updatedImage.caption,
-                ":url": updatedImage.url,
+                ":urls": updatedImage.urls,
                 ":updatedAt": updatedImage.updatedAt,
                 ":is_published": updatedImage.is_published
             }
@@ -86,16 +86,20 @@ export class ImagesAccess {
         await this.docClient.update(params).promise()
     }
 
-    async addAttachment(accountId: string, imageId: string, url: string) {
+    async addAttachment(accountId: string, imageId: string,
+        attachment_url: string, thumbnail_url: string) {
         const params = {
             TableName: this.imagesTable,
             Key: { accountId: accountId, imageId: imageId },
-            UpdateExpression: "set #na = :url",
+            UpdateExpression: "set #na = :urls",
             ExpressionAttributeNames: {
-                "#na": "url"
+                "#na": "urls"
             },
             ExpressionAttributeValues: {
-                ":url": url
+                ":urls": {
+                    raw: attachment_url,
+                    thumb: thumbnail_url
+                }
             }
         }
         await this.docClient.update(params).promise()

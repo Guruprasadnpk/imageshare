@@ -25,7 +25,7 @@ export async function getPublishedImages(): Promise<Img[]> {
     },
   })
   console.log('Images:', response.data)
-  return response.data.items
+  return response.data.images
 }
 
 export async function createImage(

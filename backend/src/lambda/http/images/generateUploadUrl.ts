@@ -36,11 +36,12 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
     const attachmentId = uuid.v4()
     const url = getUploadUrl(attachmentId)
-    const attachmentURL = `https://${bucketName}.s3.amazonaws.com/${attachmentId}`
+    const attachmentURL = `https://${bucketName}.s3.amazonaws.com/raw/${attachmentId}`
+    const thumbnailURL = `https://${bucketName}.s3.amazonaws.com/thumbnail/${attachmentId}`
 
     logger.info('Created an attachment URL:' + attachmentURL)
 
-    await addAttachment(accountId, imageId, attachmentURL)
+    await addAttachment(accountId, imageId, attachmentURL, thumbnailURL)
 
     logger.info('Added a attachment URL to ' + imageId)
 
@@ -58,7 +59,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 function getUploadUrl(attachmentId: string) {
     return s3.getSignedUrl('putObject', {
         Bucket: bucketName,
-        Key: attachmentId,
+        Key: `raw/${attachmentId}`,
         Expires: parseInt(urlExpiration)
     })
 }

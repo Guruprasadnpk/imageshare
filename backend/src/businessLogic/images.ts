@@ -57,10 +57,12 @@ export async function updateImage(
 export async function addAttachment(
     accountId: string,
     imageId: string,
-    attachmentUrl: string
+    attachmentUrl: string,
+    thumbnailUrl: string
 ) {
     return await imageAccess.addAttachment(
         accountId,
         imageId,
-        attachmentUrl)
+        attachmentUrl,
+        thumbnailUrl)
 }

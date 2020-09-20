@@ -3,7 +3,10 @@
  */
 export interface UpdateImageRequest {
     caption: string
-    url: string
+    urls: {
+        raw: string,
+        thumb: string
+    }
     updatedAt: string
     is_published: number
 }
