@@ -192,6 +192,7 @@ functions:
   ResizeImage:
     handler: src/lambda/s3/resizeImage.handler
     timeout: 900
+    memorySize: 3008
     events:
       - sns:
           arn:
