@@ -35,13 +35,7 @@ const WrapperImages = styled.section`
   display: grid;
   grid-gap: 1em;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  grid-auto-rows: 300px;
-`;
-
-const img = styled.img`
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  grid-auto-rows: auto;
 `;
 
 interface ImagesState {

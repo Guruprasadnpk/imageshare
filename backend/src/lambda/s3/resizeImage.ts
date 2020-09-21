@@ -33,7 +33,7 @@ async function processImage(record: S3EventRecord) {
         const response = await axios({ url: attachmentURL, responseType: "arraybuffer" })
         const img_buffer = Buffer.from(response.data, 'binary')
         const input = await jimp.read(img_buffer)
-        const resized_img = input.resize(250, jimp.AUTO);
+        const resized_img = input.resize(250, 350);
         const convertedBuffer = await resized_img.getBufferAsync(resized_img.getMIME());
         console.log(`Writing image back to S3 bucket: ${imagesBucketName}`)
         const thumbnail_name = key.replace('raw', 'thumbnail')
