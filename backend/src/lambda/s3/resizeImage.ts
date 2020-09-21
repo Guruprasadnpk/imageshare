@@ -3,7 +3,7 @@ import 'source-map-support/register'
 import * as AWS from 'aws-sdk'
 import * as AWSXRay from 'aws-xray-sdk'
 import axios from 'axios'
-import jimp from 'jimp'
+import sharp from 'sharp'
 
 const XAWS = AWSXRay.captureAWS(AWS)
 
@@ -32,9 +32,10 @@ async function processImage(record: S3EventRecord) {
         console.log('Reading image from: ', attachmentURL)
         const response = await axios({ url: attachmentURL, responseType: "arraybuffer" })
         const img_buffer = Buffer.from(response.data, 'binary')
-        const input = await jimp.read(img_buffer)
+
+        const input = sharp(img_buffer)
         const resized_img = input.resize(250, 350);
-        const convertedBuffer = await resized_img.getBufferAsync(resized_img.getMIME());
+        const convertedBuffer = await resized_img.toBuffer()
         console.log(`Writing image back to S3 bucket: ${imagesBucketName}`)
         const thumbnail_name = key.replace('raw', 'thumbnail')
         await s3
