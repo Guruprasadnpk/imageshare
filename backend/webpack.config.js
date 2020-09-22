@@ -10,7 +10,7 @@ module.exports = {
     resolve: {
         extensions: ['.js', '.jsx', '.json', '.ts', '.tsx'],
     },
-    externals: [nodeExternals()],
+    externals: {'sharp': '/opt/node_modules/sharp'},
     output: {
         libraryTarget: 'commonjs',
         path: path.join(__dirname, '.webpack'),

@@ -13,6 +13,7 @@ provider:
 
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'us-west-2'}
+  deploymentBucket: 'serverless-imageshare-293661646409'
 
   tracing:
     lambda: true
@@ -50,8 +51,11 @@ custom:
         contentType: application/json
         schema: ${file(models/image/update-image-request.json)}
 
-functions:
+layers:
+  sharp:
+    path: sharpLayer
 
+functions:
   Auth:
     handler: src/lambda/auth/auth0Authorizer.handler
 
@@ -191,6 +195,8 @@ functions:
 
   ResizeImage:
     handler: src/lambda/s3/resizeImage.handler
+    layers:
+      - {Ref: SharpLambdaLayer}
     timeout: 900
     memorySize: 3008
     events:

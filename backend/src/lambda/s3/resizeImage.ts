@@ -3,7 +3,7 @@ import 'source-map-support/register'
 import * as AWS from 'aws-sdk'
 import * as AWSXRay from 'aws-xray-sdk'
 import axios from 'axios'
-import sharp from 'sharp'
+const sharp = require('sharp')
 
 const XAWS = AWSXRay.captureAWS(AWS)
 
@@ -17,7 +17,10 @@ export const handler: SNSHandler = async (event: SNSEvent) => {
         const s3EventStr = snsRecord.Sns.Message
         console.log('Processing S3 event', s3EventStr)
         const s3Event = JSON.parse(s3EventStr)
-
+        const fs = require('fs');
+        fs.readdirSync('/opt/node_modules/sharp').forEach(file => {
+            console.log(file);
+        });
         for (const record of s3Event.Records) {
             await processImage(record)
         }
