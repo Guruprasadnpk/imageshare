@@ -30,7 +30,7 @@ const GlobalStyle = createGlobalStyle`
 `;
 
 const WrapperImages = styled.section`
-  max-width: 70rem;
+  max-width: 80rem;
   margin: 4rem auto;
   display: grid;
   grid-gap: 1em;
@@ -40,14 +40,12 @@ const WrapperImages = styled.section`
 
 interface ImagesState {
   images: Img[]
-  newImageName: string
   loadingImages: boolean
 }
 
 export class Images extends React.PureComponent<ImagesProps, ImagesState> {
   state: ImagesState = {
     images: [],
-    newImageName: '',
     loadingImages: true
   }
 
@@ -67,8 +65,7 @@ export class Images extends React.PureComponent<ImagesProps, ImagesState> {
   render() {
     return (
       <div>
-        <Header as="h1">IMAGEs</Header>
-
+        <Header as="h1">Images</Header>
         {this.renderImages()}
       </div>
     )
@@ -78,7 +75,6 @@ export class Images extends React.PureComponent<ImagesProps, ImagesState> {
     if (this.state.loadingImages) {
       return this.renderLoading()
     }
-
     return this.renderImagesList()
   }
 
@@ -91,7 +87,6 @@ export class Images extends React.PureComponent<ImagesProps, ImagesState> {
       </Grid.Row>
     )
   }
-
 
   renderImagesList() {
     return (
@@ -117,7 +112,6 @@ export class Images extends React.PureComponent<ImagesProps, ImagesState> {
   calculateDueDate(): string {
     const date = new Date()
     date.setDate(date.getDate() + 7)
-
     return dateFormat(date, 'yyyy-mm-dd HH:MM:ss') as string
   }
 }
