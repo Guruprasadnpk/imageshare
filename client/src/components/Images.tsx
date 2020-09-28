@@ -8,38 +8,16 @@ import {
 } from 'semantic-ui-react'
 import { getPublishedImages } from '../api/images-api'
 import Auth from '../auth/Auth'
-import { Img } from '../types/Image'
-import styled from 'styled-components';
-import { createGlobalStyle } from 'styled-components';
+import { GalleryImage } from '../types/GalleryImage'
+import Gallery from 'react-grid-gallery';
 
 interface ImagesProps {
   auth: Auth
   history: History
 }
 
-const GlobalStyle = createGlobalStyle`
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-
-  body {
-    font-family: sans-serif;
-  }
-`;
-
-const WrapperImages = styled.section`
-  max-width: 80rem;
-  margin: 4rem auto;
-  display: grid;
-  grid-gap: 1em;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  grid-auto-rows: auto;
-`;
-
 interface ImagesState {
-  images: Img[]
+  images: GalleryImage[]
   loadingImages: boolean
 }
 
@@ -49,12 +27,22 @@ export class Images extends React.PureComponent<ImagesProps, ImagesState> {
     loadingImages: true
   }
 
+
   async componentDidMount() {
     try {
       let images = await getPublishedImages()
-      
+      let galleryimages = images.map(image => {
+        return {
+          imageId: image.imageId,
+          caption: image.caption,
+          src: image.urls.raw,
+          thumbnail: image.urls.thumb,
+          thumbnailWidth: 250,
+          thumbnailHeight: 350
+        }
+      });
       this.setState({
-        images,
+        images: galleryimages,
         loadingImages: false
       })
     } catch (e) {
@@ -90,22 +78,7 @@ export class Images extends React.PureComponent<ImagesProps, ImagesState> {
 
   renderImagesList() {
     return (
-      <Grid padded>
-        {this.state.images.map((img, pos) => {
-          return (
-            <div>
-              <GlobalStyle />
-                <WrapperImages>
-                  {this.state.images.map(image => (
-                    <>
-                      <img key={img.imageId} src={image.urls.thumb} alt="" />
-                    </>
-                  ))}
-                </WrapperImages>
-            </div>
-          )
-        })}
-      </Grid>
+      <Gallery images={this.state.images} />
     )
   }
 

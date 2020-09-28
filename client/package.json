@@ -27,6 +27,7 @@
     "@types/react-router-dom": "^5.1.5",
     "@types/styled-components": "^5.1.1",
     "auth0-js": "^9.13.4",
+    "react-grid-gallery": "^0.5.5",
     "typescript": "3.9.6"
   },
   "scripts": {
