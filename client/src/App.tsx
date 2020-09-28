@@ -6,7 +6,7 @@ import Auth from './auth/Auth'
 //import { LogIn } from './components/LogIn'
 import { NotFound } from './components/NotFound'
 import { Images } from './components/Images'
-
+import { UserImages } from './components/UserImages'
 export interface AppProps {}
 
 export interface AppProps {
@@ -53,15 +53,17 @@ export default class App extends Component<AppProps, AppState> {
   }
 
   generateMenu() {
+    const loggedIn = this.props.auth.isAuthenticated()
     return (
       <Menu>
         <Menu.Item name="home">
           <Link to="/">Home</Link>
         </Menu.Item>
-        <Menu.Item name="home">
-          <Link to="/">Account</Link>
+        {loggedIn?
+        <Menu.Item name="account">
+          <Link to="/account">Account</Link>
         </Menu.Item>
-
+        :""}
         <Menu.Menu position="right">{this.logInLogOutButton()}</Menu.Menu>
       </Menu>
     )
@@ -84,20 +86,6 @@ export default class App extends Component<AppProps, AppState> {
   }
 
   generateCurrentPage() {
-    if (!this.props.auth.isAuthenticated()) {
-      return (
-        <Switch>
-          <Route
-            path="/"
-            exact
-            render={props => {
-              return <Images {...props} auth={this.props.auth} />
-            }}
-          />
-          <Route component={NotFound} />
-        </Switch>
-      )
-    }
     return (
       <Switch>
         <Route
@@ -107,6 +95,15 @@ export default class App extends Component<AppProps, AppState> {
             return <Images {...props} auth={this.props.auth} />
           }}
         />
+
+        <Route
+          path="/account"
+          exact
+          render={props => {
+            return <UserImages {...props} auth={this.props.auth} />
+          }}
+        />
+
         <Route component={NotFound} />
       </Switch>
     )

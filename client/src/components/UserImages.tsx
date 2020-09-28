@@ -4,13 +4,12 @@ import * as React from 'react'
 import {
   Grid,
   Header,
-  Image,
-  Loader
+  Loader,
 } from 'semantic-ui-react'
-
-import { getImages, getPublishedImages } from '../api/images-api'
+import { getUserImages } from '../api/images-api'
 import Auth from '../auth/Auth'
-import { Img } from '../types/Image'
+import { GalleryImage } from '../types/GalleryImage'
+import Gallery from 'react-grid-gallery';
 
 interface ImagesProps {
   auth: Auth
@@ -18,46 +17,63 @@ interface ImagesProps {
 }
 
 interface ImagesState {
-  images: Img[]
-  newImageName: string
+  images: GalleryImage[]
   loadingImages: boolean
 }
 
-export class Images extends React.PureComponent<ImagesProps, ImagesState> {
+export class UserImages extends React.PureComponent<ImagesProps, ImagesState> {
   state: ImagesState = {
     images: [],
-    newImageName: '',
-    loadingImages: true
+    loadingImages: true,
   }
 
+
   async componentDidMount() {
-    try {
-      let images = await getPublishedImages()
-      
-      this.setState({
-        images,
-        loadingImages: false
-      })
-    } catch (e) {
-      alert(`Failed to fetch images: ${e.message}`)
+    if (this.props.auth.isAuthenticated()) {
+      try {
+        let images = await getUserImages(this.props.auth.getIdToken())
+        let galleryimages = images.map(image => {
+          return {
+            imageId: image.imageId,
+            caption: image.caption,
+            src: image.urls.raw,
+            thumbnail: image.urls.thumb,
+            thumbnailWidth: 250,
+            thumbnailHeight: 350
+          }
+        });
+        this.setState({
+          images: galleryimages,
+          loadingImages: false
+        })
+      } catch (e) {
+        alert(`Failed to fetch images: ${e.message}`)
+      }
     }
   }
 
   render() {
-    return (
-      <div>
-        <Header as="h1">IMAGEs</Header>
-
-        {this.renderImages()}
-      </div>
-    )
+    const loggedIn = this.props.auth.isAuthenticated()
+      if (loggedIn) {
+        return (
+          <div>
+            <Header as="h1">My Images</Header>
+            {this.renderImages()}
+          </div>
+        )
+      } else {
+        return (
+          <div>
+            <Header as="h1">User not logged in</Header>
+          </div>
+        )
+      }
   }
 
   renderImages() {
     if (this.state.loadingImages) {
       return this.renderLoading()
     }
-
     return this.renderImagesList()
   }
 
@@ -73,24 +89,13 @@ export class Images extends React.PureComponent<ImagesProps, ImagesState> {
 
   renderImagesList() {
     return (
-      <Grid padded>
-        {this.state.images.map((img, pos) => {
-          return (
-            <Grid.Row key={img.imageId}>
-              {img.urls.thumb && (
-                <Image src={img.urls.thumb} size="medium" wrapped />
-              )}
-            </Grid.Row>
-          )
-        })}
-      </Grid>
+      <Gallery images={this.state.images} />
     )
   }
 
   calculateDueDate(): string {
     const date = new Date()
     date.setDate(date.getDate() + 7)
-
     return dateFormat(date, 'yyyy-mm-dd HH:MM:ss') as string
   }
 }

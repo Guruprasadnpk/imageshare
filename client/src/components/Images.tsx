@@ -27,7 +27,6 @@ export class Images extends React.PureComponent<ImagesProps, ImagesState> {
     loadingImages: true
   }
 
-
   async componentDidMount() {
     try {
       let images = await getPublishedImages()

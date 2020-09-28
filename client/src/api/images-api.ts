@@ -3,8 +3,8 @@ import { Img } from '../types/Image';
 import Axios from 'axios'
 import { CreateImageRequest } from '../types/CreateImageRequest';
 
-export async function getImages(idToken: string): Promise<Img[]> {
-  console.log('Fetching images')
+export async function getUserImages(idToken: string): Promise<Img[]> {
+  console.log('Fetching User images')
 
   const response = await Axios.get(`${apiEndpoint}/images`, {
     headers: {
@@ -13,7 +13,7 @@ export async function getImages(idToken: string): Promise<Img[]> {
     },
   })
   console.log('Images:', response.data)
-  return response.data.items
+  return response.data.images
 }
 
 export async function getPublishedImages(): Promise<Img[]> {
