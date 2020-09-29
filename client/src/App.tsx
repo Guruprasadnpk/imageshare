@@ -1,12 +1,14 @@
 import React, { Component } from 'react'
-import { Link, Route, Router, Switch } from 'react-router-dom'
-import { Grid, Menu, Segment } from 'semantic-ui-react'
+import { Link, Route, Switch } from 'react-router-dom'
+import { Menu, Sidebar, Icon, } from 'semantic-ui-react'
 
 import Auth from './auth/Auth'
 //import { LogIn } from './components/LogIn'
 import { NotFound } from './components/NotFound'
 import { Images } from './components/Images'
 import { UserImages } from './components/UserImages'
+import { UserUnpublishedImages } from './components/UserUnpublishedImages'
+
 export interface AppProps {}
 
 export interface AppProps {
@@ -33,79 +35,81 @@ export default class App extends Component<AppProps, AppState> {
   }
 
   render() {
-    return (
-      <div>
-        <Segment style={{ padding: '8em 0em' }} vertical>
-          <Grid container stackable verticalAlign="middle">
-            <Grid.Row>
-              <Grid.Column width={16}>
-                <Router history={this.props.history}>
-                  {this.generateMenu()}
-
-                  {this.generateCurrentPage()}
-                </Router>
-              </Grid.Column>
-            </Grid.Row>
-          </Grid>
-        </Segment>
-      </div>
-    )
-  }
-
-  generateMenu() {
     const loggedIn = this.props.auth.isAuthenticated()
     return (
-      <Menu>
-        <Menu.Item name="home">
-          <Link to="/">Home</Link>
+      <Sidebar.Pushable style={{transform: "none"}}>
+        <Sidebar
+          as={Menu}
+          animation='push'
+          direction='left'
+          icon='labeled'
+          inverted
+          visible
+          vertical
+          width='thin'
+        >
+        <Menu.Item as={Link} to='/'>
+          <Icon name='home' />
+          Home
         </Menu.Item>
-        {loggedIn?
-        <Menu.Item name="account">
-          <Link to="/account">Account</Link>
+          {loggedIn
+            ?
+            <Menu.Item as={Link} to='/published'>
+              <Icon name='globe' />
+          Published
         </Menu.Item>
-        :""}
-        <Menu.Menu position="right">{this.logInLogOutButton()}</Menu.Menu>
-      </Menu>
-    )
-  }
-
-  logInLogOutButton() {
-    if (this.props.auth.isAuthenticated()) {
-      return (
-        <Menu.Item name="logout" onClick={this.handleLogout}>
-          Log Out
+            :""
+          }
+          {loggedIn
+            ?
+            <Menu.Item as={Link} to='/unpublished'>
+              <Icon name='upload' />
+          Uploaded
         </Menu.Item>
-      )
-    } else {
-      return (
-        <Menu.Item name="login" onClick={this.handleLogin}>
-          Log In
-        </Menu.Item>
-      )
-    }
-  }
+            : ""
+          }
 
-  generateCurrentPage() {
-    return (
-      <Switch>
-        <Route
-          path="/"
-          exact
-          render={props => {
-            return <Images {...props} auth={this.props.auth} />
-          }}
-        />
+          {loggedIn
+          ?
+          <Menu.Item name="logout" onClick={this.handleLogout}>
+            <Icon name='sign-out' />
+            Logout
+          </Menu.Item>
+          :
+            <Menu.Item name="login" onClick={this.handleLogin}>
+              <Icon name='sign-in' />
+            Login
+          </Menu.Item>
+          }
+        </Sidebar>
+        <Sidebar.Pusher>
+          <Switch>
+            <Route
+              path="/"
+              exact
+              render={props => {
+                return <Images {...props} auth={this.props.auth} />
+              }}
+            />
 
-        <Route
-          path="/account"
-          exact
-          render={props => {
-            return <UserImages {...props} auth={this.props.auth} />
-          }}
-        />
-
-        <Route component={NotFound} />
-      </Switch>
+            <Route
+              path="/published"
+              exact
+              render={props => {
+                return <UserImages {...props} auth={this.props.auth} />
+              }}
+            />
+            <Route
+              path="/unpublished"
+              exact
+              render={props => {
+                return <UserUnpublishedImages {...props} auth={this.props.auth} />
+              }}
+            />
+            <Route component={NotFound} />
+          </Switch>
+        </Sidebar.Pusher>
+      </Sidebar.Pushable>
     )
   }
 }

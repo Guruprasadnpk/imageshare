@@ -8,4 +8,5 @@ export interface Img {
   }
   createdAt: string
   updatedAt: string
+  is_published: boolean
 }

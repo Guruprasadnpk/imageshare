@@ -10,6 +10,7 @@ import { getUserImages } from '../api/images-api'
 import Auth from '../auth/Auth'
 import { GalleryImage } from '../types/GalleryImage'
 import Gallery from 'react-grid-gallery';
+import '../App.css'
 
 interface ImagesProps {
   auth: Auth
@@ -24,15 +25,14 @@ interface ImagesState {
 export class UserImages extends React.PureComponent<ImagesProps, ImagesState> {
   state: ImagesState = {
     images: [],
-    loadingImages: true,
+    loadingImages: true
   }
-
 
   async componentDidMount() {
     if (this.props.auth.isAuthenticated()) {
       try {
         let images = await getUserImages(this.props.auth.getIdToken())
-        let galleryimages = images.map(image => {
+        let galleryimages = images.filter(image => (image.is_published)).map(image => {
           return {
             imageId: image.imageId,
             caption: image.caption,
@@ -89,7 +89,9 @@ export class UserImages extends React.PureComponent<ImagesProps, ImagesState> {
 
   renderImagesList() {
     return (
-      <Gallery images={this.state.images} />
+      <div className="gallery-wrapper">
+        <Gallery images={this.state.images} />
+      </div>
     )
   }
 

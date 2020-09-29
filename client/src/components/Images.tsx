@@ -52,7 +52,7 @@ export class Images extends React.PureComponent<ImagesProps, ImagesState> {
   render() {
     return (
       <div>
-        <Header as="h1">Images</Header>
+        <Header as="h1">Imageshare</Header>
         {this.renderImages()}
       </div>
     )

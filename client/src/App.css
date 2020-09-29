@@ -31,3 +31,13 @@
     transform: rotate(360deg);
   }
 }
+
+.gallery-wrapper {
+  text-align: center;
+}
+
+.gallery-wrapper Gallery {
+  max-width: 80%;
+  margin: 0 auto;
+}
+
