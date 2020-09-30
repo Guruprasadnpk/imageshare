@@ -50,6 +50,9 @@ custom:
       - name: UpdateImageRequest
         contentType: application/json
         schema: ${file(models/image/update-image-request.json)}
+      - name: PublishImageRequest
+        contentType: application/json
+        schema: ${file(models/image/publish-image-request.json)}
 
 layers:
   sharp:
@@ -131,6 +134,28 @@ functions:
             description: Update a Image
             requestModels:
               'application/json': UpdateImageRequest
+    iamRoleStatementsInherit: true
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:UpdateItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.IMAGES_TABLE}
+
+  PublishImage:
+    handler: src/lambda/http/images/publishImage.handler
+    events:
+      - http:
+          method: patch
+          authorizer: Auth
+          path: images/{imageId}/publish
+          cors: true
+          reqValidatorName: RequestBodyValidator
+          documentation:
+            summary: Publish an Image
+            description: Publish an Image
+            requestModels:
+              'application/json': PublishImageRequest
     iamRoleStatementsInherit: true
     iamRoleStatements:
       - Effect: Allow

@@ -2,6 +2,8 @@ import { apiEndpoint } from '../config'
 import { Img } from '../types/Image';
 import Axios from 'axios'
 import { CreateImageRequest } from '../types/CreateImageRequest';
+import { UpdateImageRequest } from '../types/UpdateImageRequest';
+import { PublishImageRequest } from '../types/PublishImageRequest';
 
 export async function getUserImages(idToken: string): Promise<Img[]> {
   console.log('Fetching User images')
@@ -39,4 +41,32 @@ export async function createImage(
     }
   })
   return response.data.item
+}
+
+export async function updateImage(
+  idToken: string,
+  imageId: string,
+  updateImage: UpdateImageRequest
+): Promise<Img> {
+  const response = await Axios.patch(`${apiEndpoint}/images/${imageId}`, JSON.stringify(updateImage), {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${idToken}`
+    }
+  })
+  return response.data
+}
+
+export async function publishImage(
+  idToken: string,
+  imageId: string,
+  publishImage: PublishImageRequest
+): Promise<Img> {
+  const response = await Axios.patch(`${apiEndpoint}/images/${imageId}/publish`, JSON.stringify(publishImage), {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${idToken}`
+    }
+  })
+  return response.data
 }

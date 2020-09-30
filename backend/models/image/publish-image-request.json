@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "publish-image",
+  "type": "object",
+  "properties": {
+    "is_published": {
+      "type": "integer"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "is_published",
+    "updatedAt"
+  ],
+  "additionalProperties": false
+}

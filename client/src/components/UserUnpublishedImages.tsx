@@ -6,12 +6,20 @@ import {
     Grid,
     Header,
     Loader,
+    Form,
+    Button
 } from 'semantic-ui-react'
-import { getUserImages } from '../api/images-api'
+import { getUserImages, publishImage } from '../api/images-api'
 import Auth from '../auth/Auth'
 import { UnpublishedImage } from '../types/UnpublishedImage'
 import Gallery from 'react-grid-gallery';
 import '../App.css'
+import { PublishImageRequest } from '../types/PublishImageRequest'
+
+enum UploadState {
+    NoUpload,
+    UploadingFiles,
+}
 
 interface ImagesProps {
     auth: Auth
@@ -22,13 +30,15 @@ interface ImagesState {
     images: UnpublishedImage[]
     loadingImages: boolean
     selectAllChecked: boolean
+    uploadState: UploadState
 }
 
 export class UserUnpublishedImages extends React.PureComponent<ImagesProps, ImagesState> {
     state: ImagesState = {
         images: [],
         loadingImages: true,
-        selectAllChecked: false
+        selectAllChecked: false,
+        uploadState: UploadState.NoUpload
     }
 
     allImagesSelected(images) {
@@ -97,7 +107,7 @@ export class UserUnpublishedImages extends React.PureComponent<ImagesProps, Imag
         this.onSelectImage = this.onSelectImage.bind(this);
         this.getSelectedImages = this.getSelectedImages.bind(this);
         this.onClickSelectAll = this.onClickSelectAll.bind(this);
-        
+
         if (this.props.auth.isAuthenticated()) {
             try {
                 let images = await getUserImages(this.props.auth.getIdToken())
@@ -158,9 +168,57 @@ export class UserUnpublishedImages extends React.PureComponent<ImagesProps, Imag
         )
     }
 
+    setUploadState(uploadState: UploadState) {
+        this.setState({
+            uploadState
+        })
+    }
+
+    handleSubmit = async (event: React.SyntheticEvent) => {
+        event.preventDefault()
+
+        try {
+            var images = this.state.images.slice();
+            var no_of_selected_images = 0
+            for (var i = 0; i < this.state.images.length; i++) {
+                if (images[i].isSelected) {
+                    no_of_selected_images++
+                }
+            }
+            if (no_of_selected_images === 0) {
+                alert('Files should be selected')
+                return
+            }
+
+            this.setUploadState(UploadState.UploadingFiles)
+            
+            for (var j = 0; j < this.state.images.length; j++)
+                if (images[j].isSelected) {
+                    var imageId = images[j].imageId
+                    var payload: PublishImageRequest = {
+                        is_published: 1,
+                        updatedAt: this.calculateDueDate()
+                    }
+                    console.log(payload)
+                    console.log(this.props.auth.getIdToken())
+                    await publishImage(this.props.auth.getIdToken(), imageId, payload)
+                }
+
+            alert('File(s) was uploaded!')
+        } catch (e) {
+            alert('Could not upload a file: ' + e.message)
+        } finally {
+            this.setUploadState(UploadState.NoUpload)
+        }
+    }
+
     renderImagesList() {
         return (
             <div className="gallery-wrapper">
+                <Form onSubmit={this.handleSubmit}>
+                    { this.renderButton() }
+                </Form>
+
                 <Gallery images={this.state.images}
                 onSelectImage={this.onSelectImage}
                 showLightboxThumbnails={true} />
@@ -168,9 +226,24 @@ export class UserUnpublishedImages extends React.PureComponent<ImagesProps, Imag
         )
     }
 
+    renderButton() {
+
+        return (
+            <div>
+                {this.state.uploadState === UploadState.UploadingFiles && <p>Uploading file</p>}
+                <Button
+                    loading={this.state.uploadState !== UploadState.NoUpload}
+                    type="submit"
+                >
+                    Publish
+                </Button>
+            </div>
+        )
+    }
+
     calculateDueDate(): string {
         const date = new Date()
-        date.setDate(date.getDate() + 7)
-        return dateFormat(date, 'yyyy-mm-dd HH:MM:ss') as string
+        const utc_date = date.getUTCDate();
+        return dateFormat(utc_date, "yyyy-mm-dd'T'HH:MM:ss+00:00") as string
     }
 }

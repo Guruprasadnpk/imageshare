@@ -2,17 +2,17 @@ import 'source-map-support/register'
 
 import { APIGatewayProxyEvent, APIGatewayProxyHandler, APIGatewayProxyResult } from 'aws-lambda'
 
-import { UpdateImageRequest } from '../../../requests/images/UpdateImageRequest'
-import { updateImage, imageExists } from '../../../businessLogic/images'
+import { PublishImageRequest } from '../../../requests/images/PublishImageRequest'
+import { publishImage, imageExists } from '../../../businessLogic/images'
 import { getAccountId } from '../../utils'
 
 import { createLogger } from '../../../utils/logger'
-const logger = createLogger('updateImage')
+const logger = createLogger('publishImage')
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-    logger.info("Updating image")
+    logger.info("Publishing image")
     const imageId = event.pathParameters.imageId
-    const updatedImage: UpdateImageRequest = JSON.parse(event.body)
+    const publishedImage: PublishImageRequest = JSON.parse(event.body)
 
     const accountId = getAccountId(event)
     const validImageId = await imageExists(accountId, imageId)
@@ -30,8 +30,8 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
         }
     }
 
-    await updateImage(accountId, imageId, updatedImage)
-    logger.info('Updating ' + imageId + ' with: ' + JSON.stringify(updatedImage))
+    await publishImage(accountId, imageId, publishedImage)
+    logger.info('Publishing ' + imageId + ' with: ' + JSON.stringify(publishedImage))
 
     return {
         statusCode: 201,

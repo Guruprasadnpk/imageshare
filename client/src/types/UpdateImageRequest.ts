@@ -1,5 +1,9 @@
 export interface UpdateImageRequest {
   caption: string
-  url: string
+  urls: {
+    raw: string,
+    thumb: string
+  }
+  is_published: number
   updatedAt: string
 }
