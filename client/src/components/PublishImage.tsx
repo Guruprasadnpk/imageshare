@@ -33,7 +33,7 @@ interface ImagesState {
     uploadState: UploadState
 }
 
-export class UserUnpublishedImages extends React.PureComponent<ImagesProps, ImagesState> {
+export class PublishImage extends React.PureComponent<ImagesProps, ImagesState> {
     state: ImagesState = {
         images: [],
         loadingImages: true,
@@ -199,11 +199,12 @@ export class UserUnpublishedImages extends React.PureComponent<ImagesProps, Imag
                         is_published: 1,
                         updatedAt: this.calculateDueDate()
                     }
-                    console.log(payload)
-                    console.log(this.props.auth.getIdToken())
                     await publishImage(this.props.auth.getIdToken(), imageId, payload)
                 }
-
+            this.state.images = this.state.images.filter(
+                function (img) {
+                    return img.imageId !== imageId;
+                })
             alert('File(s) was uploaded!')
         } catch (e) {
             alert('Could not upload a file: ' + e.message)

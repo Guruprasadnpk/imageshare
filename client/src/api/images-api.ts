@@ -70,3 +70,20 @@ export async function publishImage(
   })
   return response.data
 }
+
+export async function getUploadUrl(
+  idToken: string,
+  imageId: string
+): Promise<string> {
+  const response = await Axios.post(`${apiEndpoint}/images/${imageId}/attachment`, '', {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${idToken}`
+    }
+  })
+  return response.data.uploadUrl
+}
+
+export async function uploadFile(uploadUrl: string, file: Buffer): Promise<void> {
+  await Axios.put(uploadUrl, file)
+}

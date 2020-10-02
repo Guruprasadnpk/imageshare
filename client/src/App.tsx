@@ -7,7 +7,7 @@ import Auth from './auth/Auth'
 import { NotFound } from './components/NotFound'
 import { Images } from './components/Images'
 import { UserImages } from './components/UserImages'
-import { UserUnpublishedImages } from './components/UserUnpublishedImages'
+import { PublishImage } from './components/PublishImage'
 
 export interface AppProps {}
 
@@ -103,7 +103,7 @@ export default class App extends Component<AppProps, AppState> {
               path="/unpublished"
               exact
               render={props => {
-                return <UserUnpublishedImages {...props} auth={this.props.auth} />
+                return <PublishImage {...props} auth={this.props.auth} />
               }}
             />
             <Route component={NotFound} />
