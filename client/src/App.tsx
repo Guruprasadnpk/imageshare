@@ -1,11 +1,14 @@
 import React, { Component } from 'react'
 import { Link, Route, Router, Switch } from 'react-router-dom'
-import { Grid, Menu, Segment } from 'semantic-ui-react'
+import { Menu, Sidebar, Icon, } from 'semantic-ui-react'
 
 import Auth from './auth/Auth'
 //import { LogIn } from './components/LogIn'
 import { NotFound } from './components/NotFound'
 import { Images } from './components/Images'
+import { UserImages } from './components/UserImages'
+import { NewImage } from './components/NewImage'
+import { EditImage } from './components/EditImage'
 
 export interface AppProps {}
 
@@ -33,82 +36,86 @@ export default class App extends Component<AppProps, AppState> {
   }
 
   render() {
+    const loggedIn = this.props.auth.isAuthenticated()
     return (
-      <div>
-        <Segment style={{ padding: '8em 0em' }} vertical>
-          <Grid container stackable verticalAlign="middle">
-            <Grid.Row>
-              <Grid.Column width={16}>
-                <Router history={this.props.history}>
-                  {this.generateMenu()}
-
-                  {this.generateCurrentPage()}
-                </Router>
-              </Grid.Column>
-            </Grid.Row>
-          </Grid>
-        </Segment>
-      </div>
+      <Sidebar.Pushable style={{transform: "none"}}>
+        <Sidebar
+          as={Menu}
+          animation='push'
+          direction='left'
+          icon='labeled'
+          inverted
+          visible
+          vertical
+          width='thin'
+        >
+        <Menu.Item as={Link} to='/'>
+          <Icon name='home' />
+          Home
+        </Menu.Item>
+          {loggedIn
+            ?
+            <Menu.Item as={Link} to='/images'>
+              <Icon name='images' />
+              My Account
+            </Menu.Item>
+            : ""
+          }
+          {loggedIn
+          ?
+          <Menu.Item name="logout" onClick={this.handleLogout}>
+            <Icon name='sign-out' />
+            Logout
+          </Menu.Item>
+          :
+            <Menu.Item name="login" onClick={this.handleLogin}>
+              <Icon name='sign-in' />
+            Login
+          </Menu.Item>
+          }
+        </Sidebar>
+        <Router history={this.props.history}>
+          {this.generateCurrentPage()}
+        </Router>
+      </Sidebar.Pushable>
     )
-  }
-
-  generateMenu() {
-    return (
-      <Menu>
-        <Menu.Item name="home">
-          <Link to="/">Home</Link>
-        </Menu.Item>
-        <Menu.Item name="home">
-          <Link to="/">Account</Link>
-        </Menu.Item>
-
-        <Menu.Menu position="right">{this.logInLogOutButton()}</Menu.Menu>
-      </Menu>
-    )
-  }
-
-  logInLogOutButton() {
-    if (this.props.auth.isAuthenticated()) {
-      return (
-        <Menu.Item name="logout" onClick={this.handleLogout}>
-          Log Out
-        </Menu.Item>
-      )
-    } else {
-      return (
-        <Menu.Item name="login" onClick={this.handleLogin}>
-          Log In
-        </Menu.Item>
-      )
-    }
   }
 
   generateCurrentPage() {
-    if (!this.props.auth.isAuthenticated()) {
-      return (
-        <Switch>
-          <Route
-            path="/"
-            exact
-            render={props => {
-              return <Images {...props} auth={this.props.auth} />
-            }}
-          />
-          <Route component={NotFound} />
-        </Switch>
-      )
-    }
     return (
-      <Switch>
-        <Route
-          path="/"
-          exact
-          render={props => {
-            return <Images {...props} auth={this.props.auth} />
-          }}
-        />
-        <Route component={NotFound} />
-      </Switch>
+          <Sidebar.Pusher>
+            <Switch>
+              <Route
+                path="/"
+                exact
+                render={props => {
+                  return <Images {...props} auth={this.props.auth} />
+                }}
+              />
+              <Route
+                path="/images"
+                exact
+                render={props => {
+                  return <UserImages {...props} auth={this.props.auth} />
+                }}
+              />
+              <Route
+                path="/images/create"
+                exact
+                render={props => {
+                  return <NewImage {...props} auth={this.props.auth} />
+                }}
+              />
+            <Route
+            path="/images/:imageId/edit"
+              exact
+              render={props => {
+                return <EditImage {...props} auth={this.props.auth} />
+              }}
+            />
+              <Route component={NotFound} />
+            </Switch>
+          </Sidebar.Pusher>
     )
   }
 }

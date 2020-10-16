@@ -13,6 +13,7 @@ provider:
 
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'us-west-2'}
+  deploymentBucket: 'serverless-imageshare-293661646409'
 
   tracing:
     lambda: true
@@ -49,9 +50,15 @@ custom:
       - name: UpdateImageRequest
         contentType: application/json
         schema: ${file(models/image/update-image-request.json)}
+      - name: PublishImageRequest
+        contentType: application/json
+        schema: ${file(models/image/publish-image-request.json)}
+
+layers:
+  sharp:
+    path: sharpLayer
 
 functions:
-
   Auth:
     handler: src/lambda/auth/auth0Authorizer.handler
 
@@ -135,6 +142,28 @@ functions:
           - dynamodb:UpdateItem
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.IMAGES_TABLE}
 
+  PublishImage:
+    handler: src/lambda/http/images/publishImage.handler
+    events:
+      - http:
+          method: patch
+          authorizer: Auth
+          path: images/{imageId}/publish
+          cors: true
+          reqValidatorName: RequestBodyValidator
+          documentation:
+            summary: Publish an Image
+            description: Publish an Image
+            requestModels:
+              'application/json': PublishImageRequest
+    iamRoleStatementsInherit: true
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:UpdateItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.IMAGES_TABLE}
+
   DeleteImage:
     handler: src/lambda/http/images/deleteImage.handler
     events:
@@ -191,6 +220,8 @@ functions:
 
   ResizeImage:
     handler: src/lambda/s3/resizeImage.handler
+    layers:
+      - {Ref: SharpLambdaLayer}
     timeout: 900
     memorySize: 3008
     events:

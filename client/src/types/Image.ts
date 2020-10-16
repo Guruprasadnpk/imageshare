@@ -2,10 +2,11 @@ export interface Img {
   imageId: string
   accountId: string
   caption: string
-  urls: {
+  urls?: {
     raw: string,
     thumb: string
   }
   createdAt: string
   updatedAt: string
+  is_published: number
 }

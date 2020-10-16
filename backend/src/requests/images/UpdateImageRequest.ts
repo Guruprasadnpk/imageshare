@@ -7,6 +7,6 @@ export interface UpdateImageRequest {
         raw: string,
         thumb: string
     }
-    updatedAt: string
     is_published: number
+    updatedAt: string
 }

@@ -18,7 +18,7 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
     const validImageId = await imageExists(accountId, imageId)
 
     if (!validImageId) {
-        logger.error('Todo does not exist')
+        logger.error('Image does not exist')
         return {
             statusCode: 404,
             headers: {

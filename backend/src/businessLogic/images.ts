@@ -4,6 +4,7 @@ import { ImageItem } from '../models/images/ImageItem'
 import { ImagesAccess } from '../dataLayer/imageAccess'
 import { CreateImageRequest } from '../requests/images/CreateImageRequest'
 import { UpdateImageRequest } from '../requests/images/UpdateImageRequest'
+import { PublishImageRequest } from '../requests/images/PublishImageRequest'
 
 const imageAccess = new ImagesAccess()
 
@@ -52,6 +53,16 @@ export async function updateImage(
     return await imageAccess.updateImage(imageId, 
                                          accountId,
                                          UpdateImageRequest)
+}
+
+export async function publishImage(
+    imageId: string,
+    accountId: string,
+    PublishImageRequest: PublishImageRequest
+) {
+    return await imageAccess.publishImage(imageId,
+        accountId,
+        PublishImageRequest)
 }
 
 export async function addAttachment(

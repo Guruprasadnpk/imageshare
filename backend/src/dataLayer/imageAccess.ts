@@ -6,6 +6,7 @@ const logger = createLogger('imageAccess')
 
 import { ImageItem } from '../models/images/ImageItem'
 import { ImageUpdate } from '../models/images/ImageUpdate'
+import { PublishImage } from '../models/images/PublishImage'
 const XAWS = AWSXRay.captureAWS(AWS)
 
 const imageIdIndex = process.env.IMAGE_ID_INDEX
@@ -79,6 +80,20 @@ export class ImagesAccess {
             ExpressionAttributeValues: {
                 ":caption": updatedImage.caption,
                 ":urls": updatedImage.urls,
+                ":updatedAt": updatedImage.updatedAt,
+                ":is_published": updatedImage.is_published
+            }
+        }
+        await this.docClient.update(params).promise()
+    }
+
+    async publishImage(accountId: string, imageId: string, updatedImage: PublishImage) {
+        const params = {
+            TableName: this.imagesTable,
+            IndexName: imageIdIndex,
+            Key: { accountId: accountId, imageId: imageId },
+            UpdateExpression: "set is_published=:is_published, updatedAt = :updatedAt",
+            ExpressionAttributeValues: {
                 ":updatedAt": updatedImage.updatedAt,
                 ":is_published": updatedImage.is_published
             }
