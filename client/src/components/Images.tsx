@@ -33,9 +33,9 @@ export class Images extends React.PureComponent<ImagesProps, ImagesState> {
       let galleryimages = images.map(image => {
         return {
           imageId: image.imageId,
-          caption: image.caption,
-          src: image.urls.raw,
-          thumbnail: image.urls.thumb,
+          caption: image.caption + ' by ' + image.accountId,
+          src: image.urls?.raw && image.urls.raw,
+          thumbnail: image.urls?.thumb && image.urls.thumb,
           thumbnailWidth: 250,
           thumbnailHeight: 350
         }
@@ -83,7 +83,8 @@ export class Images extends React.PureComponent<ImagesProps, ImagesState> {
 
   calculateDueDate(): string {
     const date = new Date()
-    date.setDate(date.getDate() + 7)
-    return dateFormat(date, 'yyyy-mm-dd HH:MM:ss') as string
+    date.setDate(date.getDate())
+    const utc_date = date.getUTCDate()
+    return dateFormat(utc_date, "yyyy-mm-dd'T'HH:MM:ss+00:00") as string
   }
 }

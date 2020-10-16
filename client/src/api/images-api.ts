@@ -1,9 +1,9 @@
 import { apiEndpoint } from '../config'
-import { Img } from '../types/Image';
 import Axios from 'axios'
 import { CreateImageRequest } from '../types/CreateImageRequest';
 import { UpdateImageRequest } from '../types/UpdateImageRequest';
 import { PublishImageRequest } from '../types/PublishImageRequest';
+import { Img } from '../types/Image';
 
 export async function getUserImages(idToken: string): Promise<Img[]> {
   console.log('Fetching User images')
@@ -34,13 +34,14 @@ export async function createImage(
   idToken: string,
   newImage: CreateImageRequest
 ): Promise<Img> {
+  console.log('Creating image', JSON.stringify(newImage))
   const response = await Axios.post(`${apiEndpoint}/images`, JSON.stringify(newImage), {
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${idToken}`
     }
   })
-  return response.data.item
+  return response.data.image
 }
 
 export async function updateImage(
@@ -63,6 +64,19 @@ export async function publishImage(
   publishImage: PublishImageRequest
 ): Promise<Img> {
   const response = await Axios.patch(`${apiEndpoint}/images/${imageId}/publish`, JSON.stringify(publishImage), {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${idToken}`
+    }
+  })
+  return response.data
+}
+
+export async function deleteImage(
+  idToken: string,
+  imageId: string
+): Promise<Img> {
+  const response = await Axios.delete(`${apiEndpoint}/images/${imageId}`, {
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${idToken}`

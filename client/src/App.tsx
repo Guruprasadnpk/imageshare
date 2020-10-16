@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Link, Route, Switch } from 'react-router-dom'
+import { Link, Route, Router, Switch } from 'react-router-dom'
 import { Menu, Sidebar, Icon, } from 'semantic-ui-react'
 
 import Auth from './auth/Auth'
@@ -7,7 +7,8 @@ import Auth from './auth/Auth'
 import { NotFound } from './components/NotFound'
 import { Images } from './components/Images'
 import { UserImages } from './components/UserImages'
-import { PublishImage } from './components/PublishImage'
+import { NewImage } from './components/NewImage'
+import { EditImage } from './components/EditImage'
 
 export interface AppProps {}
 
@@ -54,21 +55,12 @@ export default class App extends Component<AppProps, AppState> {
         </Menu.Item>
           {loggedIn
             ?
-            <Menu.Item as={Link} to='/published'>
-              <Icon name='globe' />
-          Published
-        </Menu.Item>
-            :""
-          }
-          {loggedIn
-            ?
-            <Menu.Item as={Link} to='/unpublished'>
-              <Icon name='upload' />
-          Uploaded
-        </Menu.Item>
+            <Menu.Item as={Link} to='/images'>
+              <Icon name='images' />
+              My Account
+            </Menu.Item>
             : ""
           }
-
           {loggedIn
           ?
           <Menu.Item name="logout" onClick={this.handleLogout}>
@@ -82,34 +74,48 @@ export default class App extends Component<AppProps, AppState> {
           </Menu.Item>
           }
         </Sidebar>
-        <Sidebar.Pusher>
-          <Switch>
-            <Route
-              path="/"
-              exact
-              render={props => {
-                return <Images {...props} auth={this.props.auth} />
-              }}
-            />
-
-            <Route
-              path="/published"
-              exact
-              render={props => {
-                return <UserImages {...props} auth={this.props.auth} />
-              }}
-            />
-            <Route
-              path="/unpublished"
-              exact
-              render={props => {
-                return <PublishImage {...props} auth={this.props.auth} />
-              }}
-            />
-            <Route component={NotFound} />
-          </Switch>
-        </Sidebar.Pusher>
+        <Router history={this.props.history}>
+          {this.generateCurrentPage()}
+        </Router>
       </Sidebar.Pushable>
+    )
+  }
+
+  generateCurrentPage() {
+    return (
+          <Sidebar.Pusher>
+            <Switch>
+              <Route
+                path="/"
+                exact
+                render={props => {
+                  return <Images {...props} auth={this.props.auth} />
+                }}
+              />
+              <Route
+                path="/images"
+                exact
+                render={props => {
+                  return <UserImages {...props} auth={this.props.auth} />
+                }}
+              />
+              <Route
+                path="/images/create"
+                exact
+                render={props => {
+                  return <NewImage {...props} auth={this.props.auth} />
+                }}
+              />
+            <Route
+            path="/images/:imageId/edit"
+              exact
+              render={props => {
+                return <EditImage {...props} auth={this.props.auth} />
+              }}
+            />
+              <Route component={NotFound} />
+            </Switch>
+          </Sidebar.Pusher>
     )
   }
 }
