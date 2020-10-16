@@ -4,7 +4,7 @@ Simple Imageshare application using AWS Lambda and Serverless framework.
 
 # Functionality of the application
 
-This application will allow creating/removing/updating/fetching Image items. Each Image item can have an attachment image. The home page lists all the images published by the users and once logged in each user has access to create/delete/publish images.
+This application will allow creating/removing/updating/fetching Image items. Each Image item has an attachment image and a thumbnail image. The home page lists all the images published by the users and once logged in each user has access to create/delete/publish images.
 
 # ImageShare items
 
@@ -27,7 +27,35 @@ To implement this project, you need to implement the following functions and con
 
 * `Auth` - this function implements a custom authorizer for API Gateway that has be added to all other functions.
 
-* `GetImages` - returns all Images for a current user. A user id can be extracted from a JWT token that is sent by the frontend
+
+* `CreateImage` - Creates an Image for a current user. A user id is extracted from a JWT token that is sent by the frontend
+
+It receives an object that contains four fields:
+```json
+    {
+        "caption": "Dog 1",
+        "createdAt": "2020-09-19T20:20:39+00:00",
+        "updatedAt": "2020-09-19T20:20:39+00:00",
+        "is_published": 0
+    }
+```
+
+It returns data that looks like this:
+
+```json
+    {
+        "image": {
+            "imageId": "e4a8cfde-4767-41b6-a40e-228ca2d995d7",
+            "accountId": "google-oauth2|111870641119754504063",
+            "caption": "Dog 1",
+            "createdAt": "2020-09-19T20:20:39+00:00",
+            "updatedAt": "2020-09-19T20:20:39+00:00",
+            "is_published": 0
+        }
+    }
+```
+
+* `GetImages` - returns all Images for a current user. A user id is extracted from a JWT token that is sent by the frontend
 
 It returns data that looks like this:
 
@@ -95,7 +123,7 @@ It returns data that looks like this:
 
 * `UpdateImage` - Updates an Image item created by a current user. A shape of data send by a client application to this function can be found in the `ImageUpdate.ts` file
 
-It receives an object that contains four fields that can be updated in a Image item:
+It receives an object that contains four fields that are updated in a Image item:
 
 ```json
 {
@@ -111,7 +139,7 @@ It receives an object that contains four fields that can be updated in a Image i
 
 * `PublishImage` - Updates an Image item created by a current user. A shape of data send by a client application to this function can be found in the `ImageUpdate.ts` file
 
-It receives an object that contains two fields that can be updated in a Image item:
+It receives an object that contains two fields that are updated in a Image item:
 
 ```json
 {
@@ -146,7 +174,7 @@ Any necessary resources are added to the `resources` section of the `serverless.
 
 # Frontend
 
-The `client` folder contains a web application that can use the API that should be developed in the project.
+The `client` folder contains a web application that uses the API that should be developed in the project.
 
 This frontend works with your serverless application once it is developed. The only file that you need to edit is the `config.ts` file in the `client` folder. This file is configured to the client application just as it was done in the course and contains an API endpoint and Auth0 configuration:
 
